@@ -1,0 +1,79 @@
+<?php 
+
+namespace App\Http\Services\Product;
+use App\Models\Menu;
+use App\Models\Product;
+use Illuminate\Support\Facades\Session;
+
+class ProductService{
+    public function getMenu(){
+        return Menu::where('active',1)->get();
+    }
+
+    // protected function isValidPrice($request){
+    //     if ($request->input('price')!=0) {
+    //         Session::flash('error','Gía phải lớn hơn 0');
+    //         return false;
+    //     }
+    //     return true;
+    // }
+
+
+    public function insert($request){
+        // $isValidPrice = $this->isValidPrice($request);
+        // if ($isValidPrice==false) {
+        //     return false;
+        // }
+        try{
+            $request->except('_token');
+        Product::create($request->all());
+        Session::flash('success','Thêm sản phẩm thành công');
+        }catch(\Exception $error)
+        {
+            Session::flash('error','Thêm sản phẩm lỗi');
+            return false;
+        }
+        return true;
+    }
+
+    public function get(){
+        
+        return Product::
+            with('menu')
+        ->orderByDesc('id')->paginate(15);
+    }
+
+    public function update($request, $product){
+
+        try{
+        $product->fill($request->input());
+        $product->save();
+        Session::flash('success','Cập nhật thành công');
+        }catch(\Exception $error){
+            Session::flash('error','Cập nhật thất bại');
+            return false;
+        }
+        return true;
+    }
+
+    public function delete($request){
+        $product = Product::where('id',$request->input('id'))->first();
+        if ($product) {
+            $product->delete();
+            return true;
+        }
+
+        return false;
+    }
+
+
+}
+
+
+
+
+
+
+
+
+?>
